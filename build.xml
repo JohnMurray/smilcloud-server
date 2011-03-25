@@ -1,0 +1,76 @@
+<?xml version="1.0" ?>
+<project name="project" default="deploy">
+  <!-- ==== load properties from a properties file ==== -->
+  <property file="build.properties"/>
+  
+  <!-- ==== path used for classpath ==== -->
+  <path id="compile.classpath">
+  		<pathelement path="${tomcat.home}/lib/servlet-api.jar;lib/mysql-connector-java-3.0.17-ga-bin.jar; classes" />
+  </path>
+  
+  <!-- ==== create directories for development environment and deployment environment ==== -->
+	<target name="init">
+		<mkdir dir="etc" />
+		<mkdir dir="classes" />
+		<mkdir dir="src" />
+		<mkdir dir="web" />
+		<mkdir dir="lib" />
+		
+		<mkdir dir="${tomcat.home}/webapps/${application}" />
+		<mkdir dir="${tomcat.home}/webapps/${application}/WEB-INF" />
+		<mkdir dir="${tomcat.home}/webapps/${application}/WEB-INF/classes" />
+	</target>
+	
+	<!-- ==== compile the java source ==== -->
+	<target name="compile" depends="init">
+		<javac srcdir="src"
+		       destdir="classes">
+			<classpath refid="compile.classpath"/>
+		</javac>
+	</target>
+  
+  <!-- ==== deploy the files to Tomcat ==== -->
+  <target name="deploy" depends="compile">
+  	<copy todir="${tomcat.home}/webapps/${application}/">
+  		<fileset dir="web">
+  			<include name="**/*.*" />
+  		</fileset>
+  	</copy>
+  	<copy file="etc/web.xml" todir="${tomcat.home}/webapps/${application}/WEB-INF" />
+  	<copy todir="${tomcat.home}/webapps/${application}/WEB-INF/classes">
+  		<fileset dir="classes">
+  			<include name="**/*.*" />
+  		</fileset>
+  	</copy>
+	<copy todir="${tomcat.home}/webapps/${application}/WEB-INF/lib">
+  		<fileset dir="lib">
+  			<include name="**/*.*" />
+  		</fileset>
+  	</copy>
+  	
+  </target>
+  
+  <!-- ==== clean (for clean build) ==== -->
+  <target name="clean" >
+  	<delete dir="classes" />
+  	<delete dir="${tomcat.home}/webapps/${application}" />
+	</target>
+	
+	<!-- ==== start tomcat ==== -->
+	<target name="tomcat-start">
+    <java jar="${tomcat.home}/bin/bootstrap.jar" fork="true">
+        <jvmarg value="-Dcatalina.home=${tomcat.home}"/>
+    </java>
+  </target>
+
+  <!-- ==== stop tomcat ==== -->
+  <target name="tomcat-stop">
+    <java jar="${tomcat.home}/bin/bootstrap.jar" fork="true">
+        <jvmarg value="-Dcatalina.home=${tomcat.home}"/>
+        <arg line="stop"/>
+    </java>
+  </target>
+</project>
+ 
+  
+  
